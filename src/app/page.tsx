@@ -4,7 +4,8 @@ import { useState } from "react";
 
 export default function Home() {
   const [power, setPower] = useState<number>();
-  const [baseline, setBaseline] = useState<number>();
+  const [baseline, setBaseline] = useState<number>(0);
+  const [error, setError] = useState<string>();
 
   const action = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -12,20 +13,26 @@ export default function Home() {
 
     const startTime = parseInt(form.get("startTime") as string, 10);
     const endTime = parseInt(form.get("endTime") as string, 10);
+    const baseline = parseInt(form.get("baseline") as string, 10);
 
     const res = await unfuckPowerData(
       form,
       isNaN(startTime) ? null : startTime,
       isNaN(endTime) ? null : endTime,
+      isNaN(baseline) ? null : baseline,
     );
-    if (res) {
+    if (res > 0) {
       setPower(res);
+    } else {
+      setError(
+        "Unable to get power data from the file. Check to make sure the GPX has power data.",
+      );
     }
   };
 
   return (
-    <div>
-      <h1> Unf*ck your power data. </h1>
+    <div className="text-center">
+      <h1 className="p-8 font-semibold text-xl"> Unf*ck your power data. </h1>
       <form
         onSubmit={action}
         className="flex flex-col space-x-4 w-full items-center"
@@ -44,10 +51,18 @@ export default function Home() {
             onChange={(e) => setBaseline(parseInt(e.target.value, 10))}
           />
         </div>
-        <button type="submit">Unf*ck your file </button>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white font-semibold text-lg p-4 mt-4 rounded-2xl shadow-md border border-gray-300 hover:shadow-2xl"
+        >
+          Unf*ck your file{" "}
+        </button>
       </form>
       <p>
-        Your average power with {baseline || 0} removed is: {power}
+        {!error &&
+          power &&
+          `Your average power with ${baseline} removed is: ${power}`}
+        {error && `${error}`}
       </p>
     </div>
   );

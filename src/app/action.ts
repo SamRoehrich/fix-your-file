@@ -79,6 +79,7 @@ async function calculateAveragePower(
   gpxFile: FormData,
   startTimeMinutes: number | null = null,
   endTimeMinutes: number | null = null,
+  baseline: number = 0,
 ) {
   const powerData = await extractPowerFromGpx(
     gpxFile,
@@ -88,7 +89,7 @@ async function calculateAveragePower(
 
   const filteredPower = powerData
     .map(({ power }) => power)
-    .filter((power) => power >= 0);
+    .filter((power) => power >= baseline);
 
   if (filteredPower.length === 0) {
     return null;
@@ -103,11 +104,13 @@ export const unfuckPowerData = async (
   gpxFile: FormData,
   startTimeMinutes: number | null = null,
   endTimeMinutes: number | null = null,
+  baseline: number | null = 0,
 ) => {
   const avgPower = await calculateAveragePower(
     gpxFile,
     startTimeMinutes,
     endTimeMinutes,
+    baseline || 0,
   );
 
   if (avgPower !== null) {
@@ -117,5 +120,6 @@ export const unfuckPowerData = async (
     return avgPower;
   } else {
     console.log("No valid power data found in the specified range.");
+    return -1;
   }
 };

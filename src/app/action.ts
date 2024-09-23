@@ -3,10 +3,7 @@ import moment, { Moment } from "moment";
 import { promisify } from "util";
 
 const parser = new Parser();
-const parseStringAsync = promisify(parser.parseString);
-
-// Create a declaration for the xml2js module if not already present
-declare module "xml2js";
+const parseStringAsync = promisify(parser.parseString).bind(parser);
 
 interface PowerDataPoint {
   time: Date;
@@ -22,11 +19,13 @@ async function extractPowerFromGpx(
 
   try {
     const data = await gpxFile.text();
+    //@ts-expect-error can't type
     const result = await parseStringAsync(data);
 
     const powerData: PowerDataPoint[] = [];
     let startTime: Moment | null = null;
 
+    //@ts-expect-error won't type
     const tracks = result.gpx.trk || [];
     for (const track of tracks) {
       const segments = track.trkseg || [];
